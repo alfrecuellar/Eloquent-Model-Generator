@@ -1,6 +1,6 @@
 <?php
 
-namespace User11001\EloquentModelGenerator;
+namespace AlfreCuellar\EloquentModelGenerator;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -19,7 +19,7 @@ class EloquentModelGeneratorProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton('command.models.generate', function ($app) {
-            return $app['User11001\EloquentModelGenerator\Console\GenerateModelsCommand'];
+            return $app['AlfreCuellar\EloquentModelGenerator\Console\GenerateModelsCommand'];
         });
 
         $this->commands('command.models.generate');

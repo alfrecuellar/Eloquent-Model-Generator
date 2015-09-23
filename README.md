@@ -12,7 +12,7 @@ Add the following packages to your `composer.json`
 "require-dev": {
     "xethron/migrations-generator": "dev-l5",
     "way/generators": "dev-feature/laravel-five-stable",
-    "user11001/eloquent-model-generator": "dev-master"
+    "alfrecuellar/eloquent-model-generator": "dev-master"
 }
 ```
 
@@ -36,7 +36,7 @@ Next, add the following service providers to your `config/app.php`
 ```
 'Way\Generators\GeneratorsServiceProvider',
 'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider',
-'User11001\EloquentModelGenerator\EloquentModelGeneratorProvider',
+'AlfreCuellar\EloquentModelGenerator\EloquentModelGeneratorProvider',
 ```
 
 Lastly, make sure your `.env` file has correct database information
