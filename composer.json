@@ -17,15 +17,8 @@
     "require": {
         "php": ">=5.4.0",
         "illuminate/support": ">=4.1",
-        "xethron/migrations-generator": "*",
-        "way/generators": "~2.0"
+        "xethron/migrations-generator": "dev-l5"
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "git@github.com:jamisonvalenta/Laravel-4-Generators.git"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "AlfreCuellar\\EloquentModelGenerator\\": "src/"
