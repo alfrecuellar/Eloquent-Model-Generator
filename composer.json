@@ -17,12 +17,12 @@
     "require": {
         "php": ">=5.4.0",
         "illuminate/support": ">=4.1",
-        "xethron/migrations-generator": "dev-l5"
+        "xethron/migrations-generator": "*"
     },
     "repositories": [
         {
             "type": "git",
-            "url": "https://github.com/Xethron/migrations-generator.git"
+            "url": "git@github.com:jamisonvalenta/Laravel-4-Generators.git"
         }
     ],
     "autoload": {
