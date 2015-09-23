@@ -2,8 +2,6 @@
 Auto-generates all Eloquent models from the database in a Laravel 5 project.
 This will also add all relation functions to your generated models (belongsTo, belongsToMany, hasMany, hasOne).
 
-> I'm also creating a ServiceProvider that will auto-generate basic CRUD functionality for these models. For now, you can use [Laravel Administrator](https://github.com/FrozenNode/Laravel-Administrator) or [Dick Crud](https://github.com/tabacitu/crud) for this task.
-
 ##Installation
 
 Add the following packages to your `composer.json`
@@ -17,10 +15,14 @@ Add the following packages to your `composer.json`
 ```
 
 
-You also need to point to the fork of the way/generators repo. See [Xethron/migrations-generator](https://github.com/Xethron/migrations-generator) for more info about this.
+You also need to point to the fork of the way/generators repo and alfrecuellar repo.
 
 ```
 "repositories": [
+    {
+        "type": "git",
+        "url": "git@github.com:alfrecuellar/Eloquent-Model-Generator.git"
+    },
     {
         "type": "git",
         "url": "git@github.com:jamisonvalenta/Laravel-4-Generators.git"
@@ -34,9 +36,9 @@ Next, run `composer update`
 
 Next, add the following service providers to your `config/app.php`
 ```
-'Way\Generators\GeneratorsServiceProvider',
-'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider',
-'AlfreCuellar\EloquentModelGenerator\EloquentModelGeneratorProvider',
+Way\Generators\GeneratorsServiceProvider::class,
+Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider::class,
+AlfreCuellar\EloquentModelGenerator\EloquentModelGeneratorProvider::class,
 ```
 
 Lastly, make sure your `.env` file has correct database information
