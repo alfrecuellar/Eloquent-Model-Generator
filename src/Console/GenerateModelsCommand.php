@@ -21,7 +21,8 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     protected $name = 'models:generate';
 
-    private static $namespace;
+    private static $namespaceAbstract;
+    private static $namespaceClass;
 
     /**
      * The console command description.
@@ -117,14 +118,17 @@ class GenerateModelsCommand extends GeneratorCommand
             $belongsTo = $rules['belongsTo'];
             $belongsToMany = $rules['belongsToMany'];
 
-            self::$namespace = env('APP_NAME','App\Models');
+            self::$namespaceAbstract = env('APP_NAME','App') . "\Models\Base";
+            self::$namespaceClass = env('APP_NAME','App') . "\Models";
+
             $modelName = $this->generateModelNameFromTableName($table);
+            $objectName = strtolower($modelName);
             $fillable = implode(', ', $rules['fillable']);
 
-            $belongsToFunctions = $this->generateBelongsToFunctions($belongsTo);
-            $belongsToManyFunctions = $this->generateBelongsToManyFunctions($belongsToMany);
-            $hasManyFunctions = $this->generateHasManyFunctions($hasMany);
-            $hasOneFunctions = $this->generateHasOneFunctions($hasOne);
+            $belongsToFunctions = $this->generateBelongsToFunctions($belongsTo, $objectName);
+            $belongsToManyFunctions = $this->generateBelongsToManyFunctions($belongsToMany, $objectName);
+            $hasManyFunctions = $this->generateHasManyFunctions($hasMany, $objectName);
+            $hasOneFunctions = $this->generateHasOneFunctions($hasOne, $objectName);
 
             $functions = $this->generateFunctions([
                 $belongsToFunctions,
@@ -133,25 +137,27 @@ class GenerateModelsCommand extends GeneratorCommand
                 $hasOneFunctions,
             ]);
 
-            $filePathToGenerate = $this->getFileGenerationPath();
-            $filePathToGenerate .= '/'.$modelName.'.php';
-
-            $templateData = array(
-                'NAMESPACE' => self::$namespace,
-                'NAME' => $modelName,
-                'TABLENAME' => $table,
-                'FILLABLE' => $fillable,
-                'FUNCTIONS' => $functions
-            );
-
-            $templatePath = $this->getTemplatePath();
-
             $this->generator->make(
-                $templatePath,
-                $templateData,
-                $filePathToGenerate
+                $this->getTemplatePath(),
+                [
+                    'NAMESPACE' => self::$namespaceAbstract,
+                    'NAME' => $modelName,
+                    'TABLENAME' => $table,
+                    'FUNCTIONS' => $functions
+                ],
+                $this->getFileGenerationPath() . '/Models/Base/'.$modelName.'.php'
+            );
+            $this->generator->make(
+                $this->getTemplateClassPath(),
+                [
+                    'NAMESPACE' => self::$namespaceClass,
+                    'FILLABLE' => $fillable,
+                    'NAME' => $modelName
+                ],
+                $this->getFileGenerationPath() . '/Models/'.$modelName.'.php'
             );
         }
+        // clases vacias
     }
 
     private function generateFunctions($functionsContainer)
@@ -164,7 +170,7 @@ class GenerateModelsCommand extends GeneratorCommand
         return $f;
     }
 
-    private function generateHasManyFunctions($rulesContainer)
+    private function generateHasManyFunctions($rulesContainer, $objectName)
     {
         $functions = '';
         foreach ($rulesContainer as $rules) {
@@ -175,9 +181,12 @@ class GenerateModelsCommand extends GeneratorCommand
             $hasManyFunctionName = $this->getPluralFunctionName($hasManyModel);
 
             $function = "
+    /**
+     * Get the $hasManyFunctionName for $objectName.
+     */
     public function $hasManyFunctionName()
     {".'
-        return $this->hasMany'."('".self::$namespace."\\$hasManyModel', '$key1', '$key2');
+        return $this->hasMany'."('".self::$namespaceClass."\\$hasManyModel', '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -186,7 +195,7 @@ class GenerateModelsCommand extends GeneratorCommand
         return $functions;
     }
 
-    private function generateHasOneFunctions($rulesContainer)
+    private function generateHasOneFunctions($rulesContainer, $objectName)
     {
         $functions = '';
         foreach ($rulesContainer as $rules) {
@@ -197,9 +206,12 @@ class GenerateModelsCommand extends GeneratorCommand
             $hasOneFunctionName = $this->getSingularFunctionName($hasOneModel);
 
             $function = "
+    /**
+     * Get the $hasOneFunctionName record associated with the $objectName.
+     */
     public function $hasOneFunctionName()
     {".'
-        return $this->hasOne'."('".self::$namespace."\\$hasOneModel', '$key1', '$key2');
+        return $this->hasOne'."('".self::$namespaceClass."\\$hasOneModel', '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -208,7 +220,7 @@ class GenerateModelsCommand extends GeneratorCommand
         return $functions;
     }
 
-    private function generateBelongsToFunctions($rulesContainer)
+    private function generateBelongsToFunctions($rulesContainer, $objectName)
     {
         $functions = '';
         foreach ($rulesContainer as $rules) {
@@ -219,9 +231,12 @@ class GenerateModelsCommand extends GeneratorCommand
             $belongsToFunctionName = $this->getSingularFunctionName($belongsToModel);
 
             $function = "
+    /**
+     * Get the $belongsToFunctionName record associated with the $objectName.
+     */
     public function $belongsToFunctionName()
     {".'
-        return $this->belongsTo'."('".self::$namespace."\\$belongsToModel', '$key1', '$key2');
+        return $this->belongsTo'."('".self::$namespaceClass."\\$belongsToModel', '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -230,7 +245,7 @@ class GenerateModelsCommand extends GeneratorCommand
         return $functions;
     }
 
-    private function generateBelongsToManyFunctions($rulesContainer)
+    private function generateBelongsToManyFunctions($rulesContainer, $objectName)
     {
         $functions = '';
         foreach ($rulesContainer as $rules) {
@@ -242,9 +257,12 @@ class GenerateModelsCommand extends GeneratorCommand
             $belongsToManyFunctionName = $this->getPluralFunctionName($belongsToManyModel);
 
             $function = "
+    /**
+     * The $belongsToManyFunctionName that belong to the $objectName.
+     */
     public function $belongsToManyFunctionName()
     {".'
-        return $this->belongsToMany'."('".self::$namespace."\\$belongsToManyModel', '$through', '$key1', '$key2');
+        return $this->belongsToMany'."('".self::$namespaceClass."\\$belongsToManyModel', '$through', '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -527,7 +545,19 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     protected function getTemplatePath()
     {
-        $tp = __DIR__.'/templates/model.txt';
+        $tp = __DIR__.'/templates/modelAbstract.txt';
+
+        return $tp;
+    }
+
+    /**
+     * Get the path to the generator template.
+     *
+     * @return mixed
+     */
+    protected function getTemplateClassPath()
+    {
+        $tp = __DIR__.'/templates/modelClass.txt';
 
         return $tp;
     }
