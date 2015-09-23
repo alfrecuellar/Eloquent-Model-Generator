@@ -19,6 +19,12 @@
         "illuminate/support": ">=4.1",
         "xethron/migrations-generator": "dev-l5"
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/Xethron/migrations-generator.git"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "AlfreCuellar\\EloquentModelGenerator\\": "src/"
