@@ -175,7 +175,8 @@ class GenerateModelsCommand extends GeneratorCommand
             $hasManyFunctionName = $this->getPluralFunctionName($hasManyModel);
 
             $function = "
-    public function $hasManyFunctionName() {".'
+    public function $hasManyFunctionName()
+    {".'
         return $this->hasMany'."('".self::$namespace."\\$hasManyModel', '$key1', '$key2');
     }
 ";
@@ -196,7 +197,8 @@ class GenerateModelsCommand extends GeneratorCommand
             $hasOneFunctionName = $this->getSingularFunctionName($hasOneModel);
 
             $function = "
-    public function $hasOneFunctionName() {".'
+    public function $hasOneFunctionName()
+    {".'
         return $this->hasOne'."('".self::$namespace."\\$hasOneModel', '$key1', '$key2');
     }
 ";
@@ -217,7 +219,8 @@ class GenerateModelsCommand extends GeneratorCommand
             $belongsToFunctionName = $this->getSingularFunctionName($belongsToModel);
 
             $function = "
-    public function $belongsToFunctionName() {".'
+    public function $belongsToFunctionName()
+    {".'
         return $this->belongsTo'."('".self::$namespace."\\$belongsToModel', '$key1', '$key2');
     }
 ";
@@ -239,7 +242,8 @@ class GenerateModelsCommand extends GeneratorCommand
             $belongsToManyFunctionName = $this->getPluralFunctionName($belongsToManyModel);
 
             $function = "
-    public function $belongsToManyFunctionName() {".'
+    public function $belongsToManyFunctionName()
+    {".'
         return $this->belongsToMany'."('".self::$namespace."\\$belongsToManyModel', '$through', '$key1', '$key2');
     }
 ";
