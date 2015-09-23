@@ -18,7 +18,7 @@
         "php": ">=5.4.0",
         "illuminate/support": ">=4.1",
         "xethron/migrations-generator": "dev-l5",
-        "way/generators": "dev-feature/laravel-five-stable",
+        "way/generators": "dev-feature/laravel-five-stable"
     },
     "repositories": [
         {
