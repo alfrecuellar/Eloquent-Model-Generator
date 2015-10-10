@@ -137,7 +137,7 @@ class GenerateModelsCommand extends GeneratorCommand
                 $hasOneFunctions,
             ]);
 
-            $this->generator->make(
+            @$this->generator->make(
                 $this->getTemplatePath(),
                 [
                     'NAMESPACE' => self::$namespaceAbstract,
@@ -147,7 +147,7 @@ class GenerateModelsCommand extends GeneratorCommand
                 ],
                 $this->getFileGenerationPath() . '/Models/Base/'.$modelName.'.php'
             );
-            $this->generator->make(
+            @$this->generator->make(
                 $this->getTemplateClassPath(),
                 [
                     'NAMESPACE' => self::$namespaceClass,
@@ -186,7 +186,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $hasManyFunctionName()
     {".'
-        return $this->hasMany'."('".self::$namespaceClass."\\$hasManyModel', '$key1', '$key2');
+        return $this->hasMany'."(".self::$namespaceClass."\\$hasManyModel::class, '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -211,7 +211,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $hasOneFunctionName()
     {".'
-        return $this->hasOne'."('".self::$namespaceClass."\\$hasOneModel', '$key1', '$key2');
+        return $this->hasOne'."(".self::$namespaceClass."\\$hasOneModel::class, '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -236,7 +236,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $belongsToFunctionName()
     {".'
-        return $this->belongsTo'."('".self::$namespaceClass."\\$belongsToModel', '$key1', '$key2');
+        return $this->belongsTo'."(".self::$namespaceClass."\\$belongsToModel::class, '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -262,7 +262,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $belongsToManyFunctionName()
     {".'
-        return $this->belongsToMany'."('".self::$namespaceClass."\\$belongsToManyModel', '$through', '$key1', '$key2');
+        return $this->belongsToMany'."(".self::$namespaceClass."\\$belongsToManyModel::class, '$through', '$key1', '$key2');
     }
 ";
             $functions .= $function;
