@@ -112,6 +112,10 @@ class GenerateModelsCommand extends GeneratorCommand
     private function generateEloquentModels($eloquentRules)
     {
         foreach ($eloquentRules as $table => $rules) {
+            
+            if(in_array($table, explode(",", "password_resets,migrations")))
+                continue;
+
             //we will create a new model here
             $hasMany = $rules['hasMany'];
             $hasOne = $rules['hasOne'];
@@ -124,6 +128,7 @@ class GenerateModelsCommand extends GeneratorCommand
             $modelName = $this->generateModelNameFromTableName($table);
             $objectName = strtolower($modelName);
             $fillable = implode(', ', $rules['fillable']);
+            $hidden = implode(', ', $rules['hidden']);
 
             $belongsToFunctions = $this->generateBelongsToFunctions($belongsTo, $objectName);
             $belongsToManyFunctions = $this->generateBelongsToManyFunctions($belongsToMany, $objectName);
@@ -137,24 +142,34 @@ class GenerateModelsCommand extends GeneratorCommand
                 $hasOneFunctions,
             ]);
 
+            $abstract = $this->getFileGenerationPath() . '/Models/Base/'.$modelName.'.php';
+            $class = $this->getFileGenerationPath() . '/Models/'.$modelName.'.php';
+
+            if(is_file($abstract))
+                unlink($abstract);
+            if(is_file($class))
+                unlink($class);
+
             @$this->generator->make(
-                $this->getTemplatePath(),
+                $this->getTemplateAbstractPath($modelName),
                 [
                     'NAMESPACE' => self::$namespaceAbstract,
                     'NAME' => $modelName,
                     'TABLENAME' => $table,
                     'FUNCTIONS' => $functions
                 ],
-                $this->getFileGenerationPath() . '/Models/Base/'.$modelName.'.php'
+                $abstract
             );
             @$this->generator->make(
-                $this->getTemplateClassPath(),
+                $this->getTemplateClassPath($modelName),
                 [
                     'NAMESPACE' => self::$namespaceClass,
                     'FILLABLE' => $fillable,
+                    'HIDDEN' => $hidden,
+                    'TIMESTAMPS' => in_array("'created_at'", $rules['hidden']) ? 'true' : 'false',
                     'NAME' => $modelName
                 ],
-                $this->getFileGenerationPath() . '/Models/'.$modelName.'.php'
+                $class
             );
         }
         // clases vacias
@@ -186,7 +201,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $hasManyFunctionName()
     {".'
-        return $this->hasMany'."(".self::$namespaceClass."\\$hasManyModel::class, '$key1', '$key2');
+        return $this->hasMany'."(\\".self::$namespaceClass."\\$hasManyModel::class, '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -211,7 +226,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $hasOneFunctionName()
     {".'
-        return $this->hasOne'."(".self::$namespaceClass."\\$hasOneModel::class, '$key1', '$key2');
+        return $this->hasOne'."(\\".self::$namespaceClass."\\$hasOneModel::class, '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -236,7 +251,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $belongsToFunctionName()
     {".'
-        return $this->belongsTo'."(".self::$namespaceClass."\\$belongsToModel::class, '$key1', '$key2');
+        return $this->belongsTo'."(\\".self::$namespaceClass."\\$belongsToModel::class, '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -262,7 +277,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     public function $belongsToManyFunctionName()
     {".'
-        return $this->belongsToMany'."(".self::$namespaceClass."\\$belongsToManyModel::class, '$through', '$key1', '$key2');
+        return $this->belongsToMany'."(\\".self::$namespaceClass."\\$belongsToManyModel::class, '$through', '$key1', '$key2');
     }
 ";
             $functions .= $function;
@@ -349,6 +364,7 @@ class GenerateModelsCommand extends GeneratorCommand
                 'belongsTo' => [],
                 'belongsToMany' => [],
                 'fillable' => [],
+                'hidden' => [],
             ];
         }
 
@@ -358,6 +374,7 @@ class GenerateModelsCommand extends GeneratorCommand
             $columns = $properties['columns'];
 
             $this->setFillableProperties($table, $rules, $columns);
+            $this->setHiddenProperties($table, $rules, $columns);
 
             $isManyToMany = $this->detectManyToMany($prep, $table);
 
@@ -390,11 +407,24 @@ class GenerateModelsCommand extends GeneratorCommand
         foreach ($columns as $item) {
             $col = $item->COLUMN_NAME;
 
-            if (!ends_with($col, '_id') && $col !== 'id' && $col !== 'created_on' && $col !== 'updated_on') {
+            if ($col !== 'id' && $col !== 'created_at' && $col !== 'updated_at') {
                 $fillable[] = "'$col'";
             }
         }
         $rules[$table]['fillable'] = $fillable;
+    }
+
+    private function setHiddenProperties($table, &$rules, $columns)
+    {
+        $hidden = [];
+        foreach ($columns as $item) {
+            $col = $item->COLUMN_NAME;
+
+            if ($col == 'created_at' || $col == 'updated_at') {
+                $hidden[] = "'$col'";
+            }
+        }
+        $rules[$table]['hidden'] = $hidden;
     }
 
     private function addOneToManyRules($table, &$rules, $fk)
@@ -545,9 +575,7 @@ class GenerateModelsCommand extends GeneratorCommand
      */
     protected function getTemplatePath()
     {
-        $tp = __DIR__.'/templates/modelAbstract.txt';
-
-        return $tp;
+        return __DIR__.'/templates/modelClass.txt';
     }
 
     /**
@@ -555,10 +583,22 @@ class GenerateModelsCommand extends GeneratorCommand
      *
      * @return mixed
      */
-    protected function getTemplateClassPath()
+    protected function getTemplateAbstractPath($modelName)
     {
-        $tp = __DIR__.'/templates/modelClass.txt';
+        $custom = $this->getFileGenerationPath() . '/Models/Templates/'.ucfirst($modelName).'Abstract.txt';
+        $default =  __DIR__.'/templates/modelAbstract.txt';;
+        return is_file($custom) ? $custom : $default;
+    }
 
-        return $tp;
+    /**
+     * Get the path to the generator template.
+     *
+     * @return mixed
+     */
+    protected function getTemplateClassPath($modelName)
+    {
+        $custom = $this->getFileGenerationPath() . '/Models/Templates/'.ucfirst($modelName).'Class.txt';
+        $default =  __DIR__.'/templates/modelClass.txt';
+        return is_file($custom) ? $custom : $default;
     }
 }
